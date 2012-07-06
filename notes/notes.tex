@@ -1,0 +1,103 @@
+% template for random notes
+% Tinghui Zhou
+\documentclass[12pt]{article}
+\usepackage{parskip}
+
+\usepackage{amsmath,amssymb,graphicx,fullpage,subfigure,color}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%roman font math operators
+\DeclareMathOperator\aut{Aut}
+
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\tx}{\tilde{x}}
+
+
+% custom line spacing ----------------------------------------------------------
+\usepackage{setspace}
+%\onehalfspacing % one-and-a-half spacing
+%\doublespacing % double spacing
+%\setstretch{1.25} % custom line spacing
+
+% begin document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{title}
+\author{Tinghui Zhou}
+\date{}
+
+\maketitle
+\section{Introduction}
+The proposed approach consists of two major components: 1) providing an efficient and effective data description scheme based on the idea of Minimum Enclosing Balls (MEBs); 2) developing a new SVM variant (referred as Ball SVM for now) that is suitable for learning from data described by the MEBs. 
+
+One application of this approach is a much faster version of the image matching framework proposed in~\cite{shrivastava11}. As pointed out in the paper, a big limitation of their approach is the speed, since ``it requires training an SVM (with hard-negative mining) at query time ... too slow for many practical applications...". However, noting that the negative set in their case remains the same for all query images, an interesting question would be: is it possible to describe the negative set using an alternative representation such that it's efficient to be trained on? To do that, we propose a data description scheme using a set of MEBs, which tries to characterize the data with an efficient representation that can be utilized by our proposed SVM variant at query time.
+
+Several benefits of this approach:
+\begin{itemize}
+\item Less memory storage. The negative set can be discarded once its corresponding MEBs are extracted.
+\item Faster SVM training at query time. Originally the hard-negative mining needs to be performed over millions of image patches. With our approach, the size of negative set reduces to the number of MEBs, which would be several orders of magnitude smaller.
+\end{itemize}
+
+\section{Data description with Minimum Enclosing Balls}
+In this section, we describe a method for data description using a set of Minimum Enclosing Balls (MEBs). 
+
+\subsection{Problem Formulation}
+Suppose we are given a set of data points $X = \{x_1, \ldots, x_N \}$. The goal is to find a set of balls $B = \{ (c_1, r_1), \ldots, (c_K, r_K) \}$, with $c_k$ and $r_k$ denote the center and radius of the $k$-th ball respectively, such that they enclose as many data points with as little volume as possible. 
+
+To fit a MEB to each cluster, we use the method proposed by Tax and Duin~\cite{tax04}, where they solve this problem via a formulation similar to Support Vector Classifier:
+
+\begin{align}
+\min_{c,r} ~& r^2 + C\sum_i \xi_i \nonumber\\
+\text{s.t.} ~& \| x_i - c \|^2 \le r^2 + \xi_i, ~\xi_i \ge 0~ ~\forall i
+\label{eq:svdd_org}
+\end{align}
+
+\subsection{Solving SVDD with stochastic gradient descent}
+The SVDD objective given in Eq.~\ref{eq:svdd_org} can also be formulated as follows:
+\begin{equation}
+\min_{c,r} ~r^2 + C\sum_i \max(0, \| x_i - c\|^2 - r^2).
+\end{equation}
+Let $F$ denote the corresponding objective function. We minimize $F$ by iteratively updating $r$ and $c$. Specifically, the gradient over $c$ given fixed $r$ is given by
+$$
+\frac{\partial F}{\partial c} = C\sum_i g_c(x_i),
+$$
+where
+$$
+g_c(x_i) =
+  \begin{cases}
+   0 & \text{if } \| x_i - c\|^2 - r^2 \le 0  \\
+   2(c - x_i) & \text{otherwise}.
+  \end{cases}
+$$
+Similarly, the gradient over $r$ given fixed $c$ is 
+$$
+\frac{\partial F}{\partial r} = 2r + C\sum_i g_r(x_i),
+$$
+where
+$$
+g_r(x_i) =
+  \begin{cases}
+   0 & \text{if } \| x_i - c\|^2 - r^2 \le 0  \\
+   -2r & \text{otherwise}.
+  \end{cases}
+$$
+Note that in Page 5 of~\cite{tax04}, it's claimed that $C = 1$ indicates the hard-margin solution. Also, if $0<C<1$, the gradient seems to be always positive, meaning that $r$ becomes smaller monotonically. 
+
+\section{Ball SVM}
+Let $B = \{ (c_1, r_1), \ldots, (c_K, r_K) \}$ denote the set of MEBs describing the background (negative) data $X_- = \{x_1, \ldots, x_N \}$, and $n_k, k = 1, \ldots, K$ denote the number of points enclosed by the $k$-th ball. When data from the positive set $X_+ = \{\tx_1, \ldots, \tx_P \}$\footnote{$P=1$ in the case of exemplar image matching.} is given, we would like to find a hyperplane that separates $X_+$ from $X_-$, which is now approximated by $B$. This goal can be formally formulated as follows:
+\begin{equation}
+\min_\bw \frac{1}{2}\|\bw \|^2 + C_B\sum_{k = 1}^K \ell_B(c_k, r_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p)
+\end{equation}
+where $\ell_B(c_k, r_k, \bw) = \max(0, n_k (1 + r_k  + \bw^Tc_k))$ is the loss induced by ball $(c_k, r_k)$, and $\ell_P(\tx_p) = \max(0, 1 - \bw^T\tx_p)$ is the loss induced by $\tx_p$. $C_B$ and $C_P$ are regularization parameters to be determined via cross-validation.
+
+A geometric interpretation of $\ell_B(c_k, r_k, \bw)$ is that it penalizes the learned hyperplane for assigning the ball to the positive side and/or intersecting the ball, and is weighted by the number of points enclosed by the ball. In other words, $\ell_B(c_k, r_k, \bw) = 0$ if and only if the hyperplane correctly assigns the center of the ball $c_k$ to the negative side, and is at least $1+r_k$ distant from it.
+
+\bibliographystyle{IEEEtran}
+\bibliography{biblio}
+
+\end{document}
