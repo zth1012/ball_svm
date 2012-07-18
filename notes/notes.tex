@@ -57,7 +57,7 @@ To fit a MEB to each cluster, we use the method proposed by Tax and Duin~\cite{t
 \label{eq:svdd_org}
 \end{align}
 
-\subsection{Solving SVDD with stochastic gradient descent}
+\subsection{Solving SVDD with gradient descent}
 The SVDD objective given in Eq.~\ref{eq:svdd_org} can also be formulated as follows:
 \begin{equation}
 \min_{c,r} ~r^2 + C\sum_i \max(0, \| x_i - c\|^2 - r^2).
@@ -76,7 +76,7 @@ g_c(x_i) =
 $$
 Similarly, the gradient over $r$ given fixed $c$ is 
 $$
-\frac{\partial F}{\partial r} = 2r + C\sum_i g_r(x_i),
+\frac{\partial F}{\partial r} = 2r + C\sum_i g_r(x_i),~\label{eq:grad_r}
 $$
 where
 $$
@@ -86,16 +86,59 @@ g_r(x_i) =
    -2r & \text{otherwise}.
   \end{cases}
 $$
-Note that in Page 5 of~\cite{tax04}, it's claimed that $C = 1$ indicates the hard-margin solution. Also, if $0<C<1$, the gradient seems to be always positive, meaning that $r$ becomes smaller monotonically. 
+Note that in Page 5 of~\cite{tax04}, it's claimed that $C \ge 1$ indicates the hard-margin solution. This is because if there's $\ge 1$ points that are not enclosed, the gradient over $r$ as in Eq.~\ref{eq:grad_r} will be negative. So $r$ will become larger and larger until it can enclose all the points. In other words, the valid range for $C$ is $(0, 1)$.
 
 \section{Ball SVM}
-Let $B = \{ (c_1, r_1), \ldots, (c_K, r_K) \}$ denote the set of MEBs describing the background (negative) data $X_- = \{x_1, \ldots, x_N \}$, and $n_k, k = 1, \ldots, K$ denote the number of points enclosed by the $k$-th ball. When data from the positive set $X_+ = \{\tx_1, \ldots, \tx_P \}$\footnote{$P=1$ in the case of exemplar image matching.} is given, we would like to find a hyperplane that separates $X_+$ from $X_-$, which is now approximated by $B$. This goal can be formally formulated as follows:
+Let $B = \{ (c_1, r_1), \ldots, (c_K, r_K) \}$ denote the set of MEBs describing the background (negative) data $X_- = \{x_1, \ldots, x_N \}$, and $n_k, k = 1, \ldots, K$ denote the number of points enclosed by the $k$-th ball. When data from the positive set $X_+ = \{\tx_1, \ldots, \tx_P \}$\footnote{$P=1$ in the case of exemplar image matching.} is given, we would like to find a hyperplane that separates $X_+$ from $X_-$, with $X_-$ now approximated by $B$. This goal can be formally formulated as follows:
 \begin{equation}
 \min_\bw \frac{1}{2}\|\bw \|^2 + C_B\sum_{k = 1}^K \ell_B(c_k, r_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p)
+\label{eq:bsvm}
 \end{equation}
-where $\ell_B(c_k, r_k, \bw) = \max(0, n_k (1 + r_k  + \bw^Tc_k))$ is the loss induced by ball $(c_k, r_k)$, and $\ell_P(\tx_p) = \max(0, 1 - \bw^T\tx_p)$ is the loss induced by $\tx_p$. $C_B$ and $C_P$ are regularization parameters to be determined via cross-validation.
+where $\ell_B(c_k, r_k, n_k, \bw) = \max(0, n_k (1 + r_k  + \bw^Tc_k))$ is the loss induced by ball $(c_k, r_k)$, and $\ell_P(\tx_p) = \max(0, 1 - \bw^T\tx_p)$ is the loss induced by $\tx_p$. $C_B$ and $C_P$ are regularization parameters to be determined via cross-validation.
 
 A geometric interpretation of $\ell_B(c_k, r_k, \bw)$ is that it penalizes the learned hyperplane for assigning the ball to the positive side and/or intersecting the ball, and is weighted by the number of points enclosed by the ball. In other words, $\ell_B(c_k, r_k, \bw) = 0$ if and only if the hyperplane correctly assigns the center of the ball $c_k$ to the negative side, and is at least $1+r_k$ distant from it.
+
+\subsection{Gradient Descent for Ball SVM}
+Let $F$ denote the objective function given in Eq.~\ref{eq:bsvm}. The gradient over $\bw$ is given by
+$$
+\frac{\partial F}{\partial \bw} = \bw + C_B\sum_{k=1}^K g_B(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+$$
+where
+$$
+g_B(c_k, n_k) = 
+  \begin{cases}
+   0 & \text{if } r_k + \bw^Tc_k \le -1  \\
+   n_kc_k & \text{otherwise},
+  \end{cases}
+$$
+and
+$$
+g_P(\tx_p) = 
+  \begin{cases}
+   0 & \text{if } \bw^T\tx_p \ge 1  \\
+   -\tx_p & \text{otherwise},
+  \end{cases}
+$$
+
+\subsection{K-means SVM (Baseline)}
+As a baseline, we use the K-means cluster centers to represent negatives. The objective function then becomes
+\begin{equation}
+\min_\bw \frac{1}{2}\|\bw \|^2 + C_M\sum_{k = 1}^K \ell_M(c_k, n_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p),
+\label{eq:ksvm}
+\end{equation}
+where $\ell_B(c_k, n_k, \bw) = \max(0, n_k (1  + \bw^Tc_k))$. Therefore, the gradient over $\bw$ becomes
+$$
+\frac{\partial F}{\partial \bw} = \bw + C_M\sum_{k=1}^K g_M(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+$$
+where
+$$
+g_M(c_k, n_k) = 
+  \begin{cases}
+   0 & \text{if } \bw^Tc_k \le -1  \\
+   n_kc_k & \text{otherwise},
+  \end{cases}
+$$
+and $g_P(\tx_p)$ remains the same as previously.
 
 \bibliographystyle{IEEEtran}
 \bibliography{biblio}
