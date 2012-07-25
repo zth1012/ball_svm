@@ -30,4 +30,8 @@ A.~Shrivastava, T.~Malisiewicz, A.~Gupta, and A.~A. Efros, ``Data-driven visual
 D.~M. Tax and R.~P. Duin, ``Support vector data description,'' \emph{Machine
   Learning}, 2004.
 
+\bibitem{prml}
+C.~M. Bishop, \emph{Pattern Recognition and Machine Learning}.\hskip 1em plus
+  0.5em minus 0.4em\relax Springer, 2006.
+
 \end{thebibliography}

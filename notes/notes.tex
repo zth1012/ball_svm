@@ -89,36 +89,59 @@ $$
 Note that in Page 5 of~\cite{tax04}, it's claimed that $C \ge 1$ indicates the hard-margin solution. This is because if there's $\ge 1$ points that are not enclosed, the gradient over $r$ as in Eq.~\ref{eq:grad_r} will be negative. So $r$ will become larger and larger until it can enclose all the points. In other words, the valid range for $C$ is $(0, 1)$.
 
 \section{Ball SVM}
-Let $B = \{ (c_1, r_1), \ldots, (c_K, r_K) \}$ denote the set of MEBs describing the background (negative) data $X_- = \{x_1, \ldots, x_N \}$, and $n_k, k = 1, \ldots, K$ denote the number of points enclosed by the $k$-th ball. When data from the positive set $X_+ = \{\tx_1, \ldots, \tx_P \}$\footnote{$P=1$ in the case of exemplar image matching.} is given, we would like to find a hyperplane that separates $X_+$ from $X_-$, with $X_-$ now approximated by $B$. This goal can be formally formulated as follows:
-\begin{equation}
-\min_\bw \frac{1}{2}\|\bw \|^2 + C_B\sum_{k = 1}^K \ell_B(c_k, r_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p)
-\label{eq:bsvm}
-\end{equation}
-where $\ell_B(c_k, r_k, n_k, \bw) = \max(0, n_k (1 + r_k  + \bw^Tc_k))$ is the loss induced by ball $(c_k, r_k)$, and $\ell_P(\tx_p) = \max(0, 1 - \bw^T\tx_p)$ is the loss induced by $\tx_p$. $C_B$ and $C_P$ are regularization parameters to be determined via cross-validation.
+Now we introduce an SVM variant, referred as Ball SVM, which finds the separating hyperplane with maximum margin for data points described by MEBs. We shall see later that SVM turns out to be a special case of Ball SVM. 
 
-A geometric interpretation of $\ell_B(c_k, r_k, \bw)$ is that it penalizes the learned hyperplane for assigning the ball to the positive side and/or intersecting the ball, and is weighted by the number of points enclosed by the ball. In other words, $\ell_B(c_k, r_k, \bw) = 0$ if and only if the hyperplane correctly assigns the center of the ball $c_k$ to the negative side, and is at least $1+r_k$ distant from it.
+Let the training data be $D = \{\bc_k, r_k, n_k, y_k\}_{k=1,\ldots,K}$, where $\bc_k$ is the center of the ball, $r_k$ is its corresponding radius, $n_k$ is the number of points enclosed by the ball, and $s_k$ equals to $1$ if the ball encloses positive points and $0$ otherwise. Our goal is to find a hyperplane $\bw$ that separates the positive and negative balls with maximum margin. First, we define the distance from a ball to the hyperplane as $d_k = \frac{y_k\bw^{\top}\bc_k}{\|\bw\|} - r_k$, i.e. the distance from the center to the hyperplane minus the radius.  Following the standard SVM derivation in~\cite{prml}, we would like to find a $\bw$ such that $d_k > 0$ for all $k$, and the margin in this case is given by $\min_k d_k$, i.e. the distance from the closest ball to the hyperplane. Therefore, our goal of finding a maximum margin solution can be formulated as
+\begin{equation}
+\max_{\bw}\left\{\min_k\left[\frac{y_k\bw^{\top}\bc_k}{\|\bw\|} - r_k\right]\right\} \Longleftrightarrow \max_{\bw}\left\{\frac{1}{\|\bw\|}\min_k\left[y_k\bw^{\top}\bc_k - \|\bw\|r_k\right]\right\}.
+\end{equation}
+Since rescaling of $\bw$ does not change the distance, we set $y_k\bw^{\top}\bc_k - \|\bw\|r_k = 1$ for the ball closest to the hyperplane. Then all other balls would satisfy $y_k\bw^{\top}\bc_k - \|\bw\|r_k \ge 1$. Finally, adding the slack variable $\xi_k$ to take into account the non-separable case, we have the following optimization problem:
+\begin{align}
+\min_{\bw, \xi_k} &\quad\frac{1}{2} \| \bw \|^2 + C \sum_{k=1}^K n_k \xi_k \nonumber\\
+\text{subject to} &\quad y_k\bw^{\top}\bc_k - r_k\|\bw\| \ge 1 - \xi_k, \quad k = 1, \ldots, K.
+\end{align}
+Note that each $\xi_k$ is further weighted by $n_k$ so that the learned hyperplane places more focus on balls enclosing more points. Now we can see that standard SVM is a special case of Ball SVM with data points having zero radius.
 
 \subsection{Gradient Descent for Ball SVM}
-Let $F$ denote the objective function given in Eq.~\ref{eq:bsvm}. The gradient over $\bw$ is given by
+We rewrite the objective we want to minimize in an unconstrained form:
+\begin{equation}
+L_D(\bw) = \frac{1}{2}\|\bw\|^2 + C\sum_{k=1}^K\max(0, 1 - y_k\bw^{\top}\bc_k + r_k\| \bw \|).
+\end{equation}
+The gradient of $L_D(\bw)$ is then given by
 $$
-\frac{\partial F}{\partial \bw} = \bw + C_B\sum_{k=1}^K g_B(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+\nabla L_D(\bw) = \bw + C\sum_{k=1}^K h(\bw, \bc_k, r_k, y_k),
 $$
 where
 $$
-g_B(c_k, n_k) = 
+h(\bw, \bc_k, r_k, y_k) = 
   \begin{cases}
-   0 & \text{if } r_k + \bw^Tc_k \le -1  \\
-   n_kc_k & \text{otherwise},
+   0 & \text{if } y_k\bw^{\top}\bc_k - r_k\| \bw \| \ge 1  \\
+   -y_k\bc_k^{\top} + r_k\frac{\bw}{\|\bw\|} & \text{otherwise}.
   \end{cases}
 $$
-and
-$$
-g_P(\tx_p) = 
-  \begin{cases}
-   0 & \text{if } \bw^T\tx_p \ge 1  \\
-   -\tx_p & \text{otherwise},
-  \end{cases}
-$$
+%A geometric interpretation of $\ell_B(c_k, r_k, \bw)$ is that it penalizes the learned hyperplane for assigning the ball to the positive side and/or intersecting the ball, and is weighted by the number of points enclosed by the ball. In other words, $\ell_B(c_k, r_k, \bw) = 0$ if and only if the hyperplane correctly assigns the center of the ball $c_k$ to the negative side, and is at least $1+r_k$ distant from it.
+
+%\subsection{Gradient Descent for Ball SVM}
+%Let $F$ denote the objective function given in Eq.~\ref{eq:bsvm}. The gradient over $\bw$ is given by
+%$$
+%\frac{\partial F}{\partial \bw} = \bw + C_B\sum_{k=1}^K g_B(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+%$$
+%where
+%$$
+%g_B(c_k, n_k) = 
+%  \begin{cases}
+%   0 & \text{if } r_k + \bw^Tc_k \le -1  \\
+%   n_kc_k & \text{otherwise},
+%  \end{cases}
+%$$
+%and
+%$$
+%g_P(\tx_p) = 
+%  \begin{cases}
+%   0 & \text{if } \bw^T\tx_p \ge 1  \\
+%   -\tx_p & \text{otherwise},
+%  \end{cases}
+%$$
 
 \subsection{K-means SVM (Baseline)}
 As a baseline, we use the K-means cluster centers to represent negatives. The objective function then becomes
