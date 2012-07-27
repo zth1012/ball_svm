@@ -4,7 +4,7 @@ close all
 
 load toy_2d;
 train_features = [pos_feat; neg_feat];
-train_features = [train_features, ones(size(train_features,1),1)];
+train_features = [train_features,ones(size(train_features,1),1)];
 train_labels = [ones(size(pos_feat,1),1); -ones(size(neg_feat,1),1)];
 
 % ************************************************************************
@@ -26,19 +26,20 @@ addpath('../borrow_semisup/liblinear-1.8/matlab/');
 % train_labels = train_labels';
 
 %% Parameter setup
-C_p = [10];   % Insert more values for parameter tuning
-C_b = [20];
+C_p = [1];   % Insert more values for parameter tuning
+C_n = [10];
 C_svdd = [0.01];
-K = [1 2 5 10 20];
+% K = [1 2 5 10 20];
+K = 1;
 
 cnt = 0;
 for i = 1 : numel(C_p)
-    for j = 1 : numel(C_b)
+    for j = 1 : numel(C_n)
         for k = 1 : numel(K)
             for m = 1 : numel(C_svdd)
                 cnt = cnt + 1;
                 opts{cnt}.C_p = C_p(i);
-                opts{cnt}.C_b = C_b(j);
+                opts{cnt}.C_n = C_n(j);
                 opts{cnt}.C_svdd = C_svdd(m);
                 opts{cnt}.eta_c = 0.00001;
                 opts{cnt}.eta_r = 0.001;
@@ -87,7 +88,7 @@ for i = 1 : cnt
     hold on;
     h_org = plot(px_org, py_org, '-.g', 'LineWidth', 5);
     hold on;
-    h_ball = plot(px_ball, py_bsvm, '-m', 'LineWidth', 5);
+    h_ball = plot(px_ball, py_bsvm, '-k', 'LineWidth', 5);
     if i == 1
         hleg =legend([h_org, h_kmeans, h_ball], 'Standard SVM', 'K-means SVM', 'Ball SVM');
         set(hleg,'FontSize', 14);

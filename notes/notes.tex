@@ -91,32 +91,45 @@ Note that in Page 5 of~\cite{tax04}, it's claimed that $C \ge 1$ indicates the h
 \section{Ball SVM}
 Now we introduce an SVM variant, referred as Ball SVM, which finds the separating hyperplane with maximum margin for data points described by MEBs. We shall see later that SVM turns out to be a special case of Ball SVM. 
 
-Let the training data be $D = \{\bc_k, r_k, n_k, y_k\}_{k=1,\ldots,K}$, where $\bc_k$ is the center of the ball, $r_k$ is its corresponding radius, $n_k$ is the number of points enclosed by the ball, and $s_k$ equals to $1$ if the ball encloses positive points and $0$ otherwise. Our goal is to find a hyperplane $\bw$ that separates the positive and negative balls with maximum margin. First, we define the distance from a ball to the hyperplane as $d_k = \frac{y_k\bw^{\top}\bc_k}{\|\bw\|} - r_k$, i.e. the distance from the center to the hyperplane minus the radius.  Following the standard SVM derivation in~\cite{prml}, we would like to find a $\bw$ such that $d_k > 0$ for all $k$, and the margin in this case is given by $\min_k d_k$, i.e. the distance from the closest ball to the hyperplane. Therefore, our goal of finding a maximum margin solution can be formulated as
+Let the training data be $D = \{\bc_k, r_k, n_k, y_k\}_{k=1,\ldots,K}$, where $\bc_k$ is the center of the ball, $r_k$ is its corresponding radius, $n_k$ is the number of points enclosed by the ball, and $s_k$ equals to $1$ if the ball encloses positive points and $0$ otherwise. Our goal is to find a hyperplane $\bw$ that separates the positive and negative balls with maximum margin. First, we define the distance from a ball to the hyperplane as $d_k = \frac{y_k(\bw^{\top}\bc_k + b)}{\|\bw\|} - r_k$, i.e. the distance from the center to the hyperplane minus the radius.  Following the standard SVM derivation in~\cite{prml}, we would like to find a $\bw$ such that $d_k > 0$ for all $k$, and the margin in this case is given by $\min_k d_k$, i.e. the distance from the closest ball to the hyperplane. Therefore, our goal of finding a maximum margin solution can be formulated as
 \begin{equation}
-\max_{\bw}\left\{\min_k\left[\frac{y_k\bw^{\top}\bc_k}{\|\bw\|} - r_k\right]\right\} \Longleftrightarrow \max_{\bw}\left\{\frac{1}{\|\bw\|}\min_k\left[y_k\bw^{\top}\bc_k - \|\bw\|r_k\right]\right\}.
+\max_{\bw}\left\{\min_k\left[\frac{y_k(\bw^{\top}\bc_k + b)}{\|\bw\|} - r_k\right]\right\} \Longleftrightarrow \max_{\bw}\left\{\frac{1}{\|\bw\|}\min_k\left[y_k(\bw^{\top}\bc_k + b) - \|\bw\|r_k\right]\right\}.
 \end{equation}
-Since rescaling of $\bw$ does not change the distance, we set $y_k\bw^{\top}\bc_k - \|\bw\|r_k = 1$ for the ball closest to the hyperplane. Then all other balls would satisfy $y_k\bw^{\top}\bc_k - \|\bw\|r_k \ge 1$. Finally, adding the slack variable $\xi_k$ to take into account the non-separable case, we have the following optimization problem:
+Since rescaling of $\bw$ does not change the distance, we set $y_k(\bw^{\top}\bc_k + b) - \|\bw\|r_k = 1$ for the ball closest to the hyperplane. Then all other balls would satisfy $y_k(\bw^{\top}\bc_k + b) - \|\bw\|r_k \ge 1$. Finally, adding the slack variable $\xi_k$ to take into account the non-separable case, we have the following optimization problem:
 \begin{align}
 \min_{\bw, \xi_k} &\quad\frac{1}{2} \| \bw \|^2 + C \sum_{k=1}^K n_k \xi_k \nonumber\\
-\text{subject to} &\quad y_k\bw^{\top}\bc_k - r_k\|\bw\| \ge 1 - \xi_k, \quad k = 1, \ldots, K.
+\text{subject to} &\quad y_k(\bw^{\top}\bc_k + b) - r_k\|\bw\| \ge 1 - \xi_k, \quad k = 1, \ldots, K.
 \end{align}
 Note that each $\xi_k$ is further weighted by $n_k$ so that the learned hyperplane places more focus on balls enclosing more points. Now we can see that standard SVM is a special case of Ball SVM with data points having zero radius.
 
 \subsection{Gradient Descent for Ball SVM}
 We rewrite the objective we want to minimize in an unconstrained form:
 \begin{equation}
-L_D(\bw) = \frac{1}{2}\|\bw\|^2 + C\sum_{k=1}^K\max(0, 1 - y_k\bw^{\top}\bc_k + r_k\| \bw \|).
+L_D(\bw, b) = \frac{1}{2}\|\bw\|^2 + C\sum_{k=1}^Kn_k\max[0, 1 - y_k(\bw^{\top}\bc_k +b) + r_k\| \bw \|].
 \end{equation}
-The gradient of $L_D(\bw)$ is then given by
+The gradient over $\bw$ is then given by
 $$
-\nabla L_D(\bw) = \bw + C\sum_{k=1}^K h(\bw, \bc_k, r_k, y_k),
+\nabla_{\bw} L_D = \bw + C\sum_{k=1}^K n_k h(\bw, b, \bc_k, r_k, y_k),
+%\frac{\partial L_D}{\partial \bw} = \bw + C\sum_{k=1}^K n_k h(\bw, \bc_k, r_k, y_k),
 $$
 where
 $$
-h(\bw, \bc_k, r_k, y_k) = 
+h(\bw, b, \bc_k, r_k, y_k) = 
   \begin{cases}
-   0 & \text{if } y_k\bw^{\top}\bc_k - r_k\| \bw \| \ge 1  \\
+   0 & \text{if } y_k(\bw^{\top}\bc_k +b) - r_k\| \bw \| \ge 1  \\
    -y_k\bc_k^{\top} + r_k\frac{\bw}{\|\bw\|} & \text{otherwise}.
+  \end{cases}
+$$
+Similarly, the gradient over $b$ is given by
+$$
+\nabla_{b} L_D = C\sum_{k=1}^K n_k f(\bw, b, \bc_k, r_k, y_k),
+$$
+where
+$$
+f(\bw, b, \bc_k, r_k, y_k) = 
+  \begin{cases}
+   0 & \text{if } y_k(\bw^{\top}\bc_k +b) - r_k\| \bw \| \ge 1  \\
+   -y_k & \text{otherwise}.
   \end{cases}
 $$
 %A geometric interpretation of $\ell_B(c_k, r_k, \bw)$ is that it penalizes the learned hyperplane for assigning the ball to the positive side and/or intersecting the ball, and is weighted by the number of points enclosed by the ball. In other words, $\ell_B(c_k, r_k, \bw) = 0$ if and only if the hyperplane correctly assigns the center of the ball $c_k$ to the negative side, and is at least $1+r_k$ distant from it.

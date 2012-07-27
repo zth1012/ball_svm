@@ -7,7 +7,7 @@ max_iter_r = opt.max_iter_r;
 global_max_iter = opt.global_max_iter;
 C_svdd = opt.C_svdd;
 K = opt.K;
-C_b = opt.C_b;
+C_n = opt.C_n;
 C_p = opt.C_p;
 eta_w = opt.eta_w;
 max_iter_w = opt.max_iter_w;
@@ -49,22 +49,19 @@ if size(train_feat, 2) == 3
 end
 
 % Initialize w
-w = zeros(size(train_feat,2), 1);
+w = 0.1 * rand(size(train_feat,2), 1);
 best_w = w;
 iter = 1;
-prev_obj = compute_ball_svm_obj(w, C_b, C_p, pos_feat, neg_balls);
+prev_obj = compute_ball_svm_obj(w, C_n, C_p, pos_feat, neg_balls);
 best_obj = prev_obj;
 while 1
-%     [px_proj_ball, ~] = arrayfun(@(x,y) project_point_to_line(w, x, y), train_feat(:,1), train_feat(:,2));
-%     px_ball = min(px_proj_ball):0.01:max(px_proj_ball);
-%     py_bsvm = -(w(1) * px_ball + w(3))/w(2);
-%     h_ball = plot(px_ball, py_bsvm, '-m', 'LineWidth', 5);
     grad = w;
-    grad(end) = 0;
+%     grad(end) = 0;
     % Update gradient using the negative balls
     for k = 1 : K
-        if neg_balls{k}.radius + neg_balls{k}.center * w > -1
-            grad = grad + C_b * neg_balls{k}.numpts * neg_balls{k}.center';
+        if neg_balls{k}.center * w + neg_balls{k}.radius * norm(w) > -1
+            fprintf('Negative violation: %f\n', neg_balls{k}.center * w + neg_balls{k}.radius * norm(w));
+            grad = grad + C_n * neg_balls{k}.numpts * (neg_balls{k}.center' + neg_balls{k}.radius * w/norm(w));
         end
     end
     % Update gradient using the positive data
@@ -73,9 +70,14 @@ while 1
             grad = grad - C_p * pos_feat(p,:)';
         end
     end
-    w = w - eta_w * grad;
+    w = w - [eta_w; eta_w; eta_w*0.01] .* grad;
     
-    curr_obj = compute_ball_svm_obj(w, C_b, C_p, pos_feat, neg_balls);
+    [px_proj_ball, ~] = arrayfun(@(x,y) project_point_to_line(w, x, y), train_feat(:,1), train_feat(:,2));
+    px_ball = min(px_proj_ball):0.01:max(px_proj_ball);
+    py_bsvm = -(w(1) * px_ball + w(3))/w(2);
+    h_ball = plot(px_ball, py_bsvm, '-m', 'LineWidth', 5);
+    
+    curr_obj = compute_ball_svm_obj(w, C_n, C_p, pos_feat, neg_balls);
     obj_dec = prev_obj - curr_obj;
     if curr_obj < best_obj
         best_obj = curr_obj;
@@ -89,15 +91,17 @@ while 1
     end
 end
 
-function obj = compute_ball_svm_obj(w, C_b, C_p, pos_feat, neg_balls)
+function obj = compute_ball_svm_obj(w, C_n, C_p, pos_feat, neg_balls)
 obj = 0.5 * norm(w,2)^2;
 temp_sum = 0;
 for k = 1 : length(neg_balls)
-    temp_sum = temp_sum + max([0, neg_balls{k}.numpts * (1 + neg_balls{k}.radius + neg_balls{k}.center * w)]);
+    temp_sum = temp_sum + max([0, neg_balls{k}.numpts * (1 + neg_balls{k}.center * w + neg_balls{k}.radius * norm(w))]);
 end
-obj = obj + C_b * temp_sum;
+fprintf('Negative objective: %f\n', temp_sum);
+obj = obj + C_n * temp_sum;
 temp_sum = 0;
 for p = 1 : size(pos_feat,1)
     temp_sum = temp_sum + max([0, 1 - pos_feat(p,:) * w]);
 end
+fprintf('Positive objective: %f\n', temp_sum);
 obj = obj + C_p * temp_sum;
