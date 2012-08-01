@@ -26,7 +26,7 @@ addpath('../borrow_semisup/liblinear-1.8/matlab/');
 % train_labels = train_labels';
 
 %% Parameter setup
-C_p = [40];   % Insert more values for parameter tuning
+C_p = [10];   % Insert more values for parameter tuning
 C_n = [10];
 C_svdd = [0.01];
 % K = [1 2 5 10 20];
@@ -84,11 +84,11 @@ for i = 1 : cnt
     py_org = -(org_w{i}(1) * px_org + org_w{i}(3))/org_w{i}(2);
     py_kmeans = -(kmeans_w{i}(1) * px_kmeans + kmeans_w{i}(3))/kmeans_w{i}(2);
     
-    h_kmeans = plot(px_kmeans, py_kmeans, '--m', 'LineWidth', 3);
+    h_kmeans = plot(px_kmeans, py_kmeans, ':y', 'LineWidth', 5);
     hold on;
-    h_org = plot(px_org, py_org, '-.g', 'LineWidth', 3);
+    h_org = plot(px_org, py_org, '-.g', 'LineWidth', 5);
     hold on;
-    h_ball = plot(px_ball, py_bsvm, '-k', 'LineWidth', 3);
+    h_ball = plot(px_ball, py_bsvm, '-m', 'LineWidth', 5);
     if i == 1
         hleg =legend([h_org, h_kmeans, h_ball], 'Standard SVM', 'K-means SVM', 'Ball SVM');
         set(hleg,'FontSize', 14);

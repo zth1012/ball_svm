@@ -157,24 +157,59 @@ $$
 %$$
 
 \subsection{K-means SVM (Baseline)}
-As a baseline, we use the K-means cluster centers to represent negatives. The objective function then becomes
-\begin{equation}
-\min_\bw \frac{1}{2}\|\bw \|^2 + C_M\sum_{k = 1}^K \ell_M(c_k, n_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p),
+As a baseline, we use only the K-means cluster centers to represent data. Consequently, it is equivalent to Ball SVM with radius of the balls being zero. The objective function then becomes
+\begin{align}
+\min_{\bw, \xi_k} &\quad\frac{1}{2} \| \bw \|^2 + C \sum_{k=1}^K n_k \xi_k \nonumber\\
+\text{subject to} &\quad y_k(\bw^{\top}\bc_k + b) \ge 1 - \xi_k, \quad k = 1, \ldots, K.
 \label{eq:ksvm}
+\end{align}
+Rewrite the objective in unconstrained form:
+\begin{equation}
+L_D(\bw, b) = \frac{1}{2}\|\bw\|^2 + C\sum_{k=1}^Kn_k\max[0, 1 - y_k(\bw^{\top}\bc_k +b)].
 \end{equation}
-where $\ell_B(c_k, n_k, \bw) = \max(0, n_k (1  + \bw^Tc_k))$. Therefore, the gradient over $\bw$ becomes
+The gradient over $\bw$ is then given by
 $$
-\frac{\partial F}{\partial \bw} = \bw + C_M\sum_{k=1}^K g_M(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+\nabla_{\bw} L_D = \bw + C\sum_{k=1}^K n_k h(\bw, b, \bc_k, y_k),
+%\frac{\partial L_D}{\partial \bw} = \bw + C\sum_{k=1}^K n_k h(\bw, \bc_k, r_k, y_k),
 $$
 where
 $$
-g_M(c_k, n_k) = 
+h(\bw, b, \bc_k, r_k, y_k) = 
   \begin{cases}
-   0 & \text{if } \bw^Tc_k \le -1  \\
-   n_kc_k & \text{otherwise},
+   0 & \text{if } y_k(\bw^{\top}\bc_k +b)\ge 1  \\
+   -y_k\bc_k^{\top} & \text{otherwise}.
   \end{cases}
 $$
-and $g_P(\tx_p)$ remains the same as previously.
+Similarly, the gradient over $b$ is given by
+$$
+\nabla_{b} L_D = C\sum_{k=1}^K n_k f(\bw, b, \bc_k, y_k),
+$$
+where
+$$
+f(\bw, b, \bc_k, y_k) = 
+  \begin{cases}
+   0 & \text{if } y_k(\bw^{\top}\bc_k +b) \ge 1  \\
+   -y_k & \text{otherwise}.
+  \end{cases}
+$$
+%As a baseline, we use the K-means cluster centers to represent negatives. The objective function then becomes
+%\begin{equation}
+%\min_\bw \frac{1}{2}\|\bw \|^2 + C_M\sum_{k = 1}^K \ell_M(c_k, n_k, \bw) + C_P\sum_{p=1}^P \ell_P(\tx_p),
+%\label{eq:ksvm}
+%\end{equation}
+%where $\ell_B(c_k, n_k, \bw) = \max(0, n_k (1  + \bw^Tc_k))$. Therefore, the gradient over $\bw$ becomes
+%$$
+%\frac{\partial F}{\partial \bw} = \bw + C_M\sum_{k=1}^K g_M(c_k, n_k) + C_P\sum_{p=1}^P g_P(\tx_p)
+%$$
+%where
+%$$
+%g_M(c_k, n_k) = 
+%  \begin{cases}
+%   0 & \text{if } \bw^Tc_k \le -1  \\
+%   n_kc_k & \text{otherwise},
+%  \end{cases}
+%$$
+%and $g_P(\tx_p)$ remains the same as previously.
 
 \bibliographystyle{IEEEtran}
 \bibliography{biblio}

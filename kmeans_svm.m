@@ -12,6 +12,7 @@ best_w = w;
 iter = 1;
 prev_obj = compute_kmeans_svm_obj(w, C_n, C_p, pos_feat, neg_clusters);
 best_obj = prev_obj;
+w_prev = w;
 while 1
     grad = w;
     grad(end) = 0;
@@ -38,9 +39,10 @@ while 1
     fprintf('Training K-means SVM: Iter = %d, curr_obj = %f, obj_dec = %08f, norm(w) = %f\n', iter, curr_obj, obj_dec, norm(w));
     prev_obj = curr_obj;
     iter = iter + 1;
-    if iter > max_iter_w
+    if iter > max_iter_w ||(norm( w-w_prev)/(norm(w)+eps)<10^(-3))
         break;
     end
+    w_prev = w;
 end
 
 function obj = compute_kmeans_svm_obj(w, C_b, C_p, pos_feat, neg_clusters)
