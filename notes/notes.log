@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=pdflatex 2011.7.3)  1 AUG 2012 11:56
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=pdflatex 2011.7.3)  12 AUG 2012 18:09
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -296,34 +296,61 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
  [1
 
 {/usr/local/texlive/2011/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
- (./notes.bbl
-[4]) [5] (./notes.aux) ) 
+ [4]
+<toy_neg_k_2.pdf, id=27, 562.1pt x 421.575pt>
+File: toy_neg_k_2.pdf Graphic file (type pdf)
+ <use toy_neg_k_2.pdf>
+Package pdftex.def Info: toy_neg_k_2.pdf used on input line 224.
+(pdftex.def)             Requested size: 224.83601pt x 168.627pt.
+
+<toy_neg_k_4.pdf, id=28, 562.1pt x 421.575pt>
+File: toy_neg_k_4.pdf Graphic file (type pdf)
+ <use toy_neg_k_4.pdf>
+Package pdftex.def Info: toy_neg_k_4.pdf used on input line 227.
+(pdftex.def)             Requested size: 224.83601pt x 168.627pt.
+
+<toy_neg_k_8.pdf, id=29, 562.1pt x 421.575pt>
+File: toy_neg_k_8.pdf Graphic file (type pdf)
+ <use toy_neg_k_8.pdf>
+Package pdftex.def Info: toy_neg_k_8.pdf used on input line 230.
+(pdftex.def)             Requested size: 224.83601pt x 168.627pt.
+
+<toy_neg_k_16.pdf, id=30, 562.1pt x 421.575pt>
+File: toy_neg_k_16.pdf Graphic file (type pdf)
+ <use toy_neg_k_16.pdf>
+Package pdftex.def Info: toy_neg_k_16.pdf used on input line 233.
+(pdftex.def)             Requested size: 224.83601pt x 168.627pt.
+
+(./notes.bbl) [5] [6 <./toy_neg_k_2.pdf> <./toy_neg_k_4.pdf> <./toy_neg_k_8.pdf
+> <./toy_neg_k_16.pdf>] (./notes.aux) ) 
 Here is how much of TeX's memory you used:
- 2904 strings out of 493633
- 38959 string characters out of 3143378
- 97334 words of memory out of 3000000
- 6136 multiletter control sequences out of 15000+200000
- 13371 words of font info for 51 fonts, out of 3000000 for 9000
+ 2939 strings out of 493633
+ 39487 string characters out of 3143378
+ 97352 words of memory out of 3000000
+ 6162 multiletter control sequences out of 15000+200000
+ 14943 words of font info for 57 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
- 38i,10n,24p,912b,215s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/local/texlive/2011/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmbx12.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmbx8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/ams
-fonts/cm/cmex10.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmmi12.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmmi6.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmmi8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmr12.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmr17.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mr8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
-10.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6
-.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.p
-fb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pf
-b>
-Output written on notes.pdf (5 pages, 143720 bytes).
+ 38i,10n,24p,912b,260s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/local/texlive/2011/texmf-dist/font
+s/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2011/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmbx8.pfb></usr/local/texlive/2011/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2011/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2011/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2011/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr10.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr12.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmr17.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmsy10.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmsy6.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmsy8.pfb></usr/local/texlive/2011/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmti12.pfb>
+Output written on notes.pdf (6 pages, 1981668 bytes).
 PDF statistics:
- 72 PDF objects out of 1000 (max. 8388607)
- 51 compressed objects within 1 object stream
+ 160 PDF objects out of 1000 (max. 8388607)
+ 107 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

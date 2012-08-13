@@ -58,6 +58,7 @@ To fit a MEB to each cluster, we use the method proposed by Tax and Duin~\cite{t
 \end{align}
 
 \subsection{Solving SVDD with gradient descent}
+\label{sec:svdd}
 The SVDD objective given in Eq.~\ref{eq:svdd_org} can also be formulated as follows:
 \begin{equation}
 \min_{c,r} ~r^2 + C\sum_i \max(0, \| x_i - c\|^2 - r^2).
@@ -210,6 +211,28 @@ $$
 %  \end{cases}
 %$$
 %and $g_P(\tx_p)$ remains the same as previously.
+
+\section{Results on a Toy Dataset}
+To visually compare the resulting hyperplane obtained by Ball SVM, baseline $k$-means SVM, and standard SVM, respectively,  we perform binary classification on a toy 2D dataset, with results shown in Figure~\ref{fig:toy2d}. The goal is to separate the positive points (shown in red squares) from the negative ones (shown in blue rectangles). First, we run $k$-means clustering on the negative set, and use the SVDD algorithm described in Section~\ref{sec:svdd} to fit a MEB for each cluster. Then the Ball SVM is trained using the positive points (which are also treated as balls with zero radius) and the negative balls, the $k$-means SVM is trained using the positive points and the negative cluster centers, and the standard SVM is trained using the original data. 
+
+One can see that when $k$ is small, Ball SVM provides much better approximation to standard SVM than $k$-means SVM. This is because Ball SVM is able to incorporate the information on the geometric span of each negative cluster when training using the MEBs, while such information is lost in $k$-means SVM. In addition, both Ball SVM and $k$-means SVM provide better and better approximation to standard SVM as the number of clusters $k$ increases (but in all cases Ball SVM still appears to outperform $k$-means SVM).
+
+\begin{figure}
+\centering
+\subfigure[$k=2$]{
+\includegraphics[scale = 0.4]{toy_neg_k_2.pdf}
+}
+\subfigure[$k=4$]{
+\includegraphics[scale = 0.4]{toy_neg_k_4.pdf}
+}
+\subfigure[$k=8$]{
+\includegraphics[scale = 0.4]{toy_neg_k_8.pdf}
+}
+\subfigure[$k=16$]{
+\includegraphics[scale = 0.4]{toy_neg_k_16.pdf}
+}
+\caption{Results on a toy 2D dataset.}~\label{fig:toy2d}
+\end{figure}
 
 \bibliographystyle{IEEEtran}
 \bibliography{biblio}

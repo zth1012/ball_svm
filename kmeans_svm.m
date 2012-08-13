@@ -18,8 +18,8 @@ while 1
     grad(end) = 0;
     % Update gradient using the negative clusters
     for k = 1 : K
-        if neg_clusters{k}.center * w > -1
-            grad = grad + C_n * neg_clusters{k}.numpts * neg_clusters{k}.center';
+        if neg_clusters(k).center * w > -1
+            grad = grad + C_n * neg_clusters(k).numpts * neg_clusters(k).center';
         end
     end
     % Update gradient using the positive data
@@ -39,7 +39,7 @@ while 1
     fprintf('Training K-means SVM: Iter = %d, curr_obj = %f, obj_dec = %08f, norm(w) = %f\n', iter, curr_obj, obj_dec, norm(w));
     prev_obj = curr_obj;
     iter = iter + 1;
-    if iter > max_iter_w ||(norm( w-w_prev)/(norm(w)+eps)<10^(-3))
+    if iter > max_iter_w ||(norm( w-w_prev)/(norm(w)+eps)<10^(-2))
         break;
     end
     w_prev = w;
@@ -50,7 +50,7 @@ function obj = compute_kmeans_svm_obj(w, C_b, C_p, pos_feat, neg_clusters)
 obj = 0.5 * norm(w,2)^2;
 temp_sum = 0;
 for k = 1 : length(neg_clusters)
-    temp_sum = temp_sum + max([0, neg_clusters{k}.numpts * (1 + neg_clusters{k}.center * w)]);
+    temp_sum = temp_sum + max([0, neg_clusters(k).numpts * (1 + neg_clusters(k).center * w)]);
 end
 obj = obj + C_b * temp_sum;
 temp_sum = 0;

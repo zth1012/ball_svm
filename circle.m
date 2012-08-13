@@ -28,5 +28,5 @@ RHO=ones(1,NOP)*radius;
 [X,Y] = pol2cart(THETA,RHO);
 X=X+center(1);
 Y=Y+center(2);
-H=plot(X,Y,style, 'LineWidth', 1.2);
+H=plot(X,Y,style, 'LineWidth', 2.0);
 axis square;
